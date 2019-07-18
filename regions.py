@@ -78,12 +78,12 @@ plt.tight_layout()
 plt.close('all') # para que no se acumulen los plots
 
 # generamos el grid
-xx, yy = np.meshgrid(np.arange(-100,100), np.arange(-50,50))
+xx, yy = np.meshgrid(np.linspace(-10,10, 201), np.linspace(-5, 5, 101))
 
 N1 = 20 #number of neurons in 1st layer
 
 # concatenamos un tercer canal de 1 para el bias, para que sea inner product
-xfin = np.stack((xx/10,yy/10, np.ones_like(xx)), axis=2)
+xfin = np.stack((xx,yy, np.ones_like(xx)), axis=2)
 
 W1 = np.array(np.random.randn(3, N1)) #weights de neurona 0 (capa 1)
 
@@ -101,6 +101,8 @@ ax.imshow(x3[0].T, vmin=-maxval, vmax=maxval, cmap='coolwarm', alpha=.8)
 ax.set_title(f'tahn({w3[0,0]:.2f} y0 + {w3[0,1]:.2f} y1 + ... + {w3[0,-1]:.2f})')
 ax.set_ylabel('y1')
 ax.set_xlabel('y0')
-ax.get_xaxis().set_ticks([])
-ax.get_yaxis().set_ticks([])
+ax.set_yticks(np.linspace(0,100,5))
+ax.set_yticklabels(np.linspace(-5, 5, 5))
+ax.set_xticks(np.linspace(0,200,5))
+ax.set_xticklabels(np.linspace(-10, 10, 5))
 plt.tight_layout()
