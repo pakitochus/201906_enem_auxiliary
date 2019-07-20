@@ -10,6 +10,7 @@ Created on Thu Jul 18 14:40:59 2019
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
+from scipy.signal import convolve2d
 
 global points 
 points = np.array([[0,0], [0,2], [1, 3], [1,1]])
@@ -28,9 +29,9 @@ def draw_matrix(ax, offset, shape, colorlist = None):
         assert len(colorlist)>=N
         
     matrix = []
-    for r in range(shape[0]):
-        for c in range(shape[1]):
-            curr_ix = np.ravel_multi_index((r, c), shape)
+    for c in range(shape[0]):
+        for r in range(shape[1]):
+            curr_ix = np.ravel_multi_index((c,r), shape)
             matrix.append(draw_patch(ax, offset + np.array([r,r+c*2]), colorlist[curr_ix]))
             
     return matrix
@@ -64,6 +65,7 @@ else:
     matrix = plt.imread(load_image)
     if matrix.ndim>2:
         matrix = matrix.mean(axis=2)
+    matrix = np.rot90(matrix,2)
     msize = matrix.shape
     
     
@@ -75,17 +77,15 @@ elif filtro=='sobel':
     filtro = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])/8
     fsize = 3
     
-padding = 0
-stride = 1
-finalwidth = (msize[0]-fsize+2*padding)/stride + 1
-finalsize = (int(finalwidth), int(finalwidth))
-
+result = convolve2d(matrix,filtro, 'valid')
+finalsize = result.shape
 distance = 10 #distancia entre las matrices
 
 
 mcolors = ['#'+hex(int(el*15))[2]*6 for el in matrix.flatten()]
 colors_filt = ['#'+hex(int(el*15))[2]*6 for el in (filtro-filtro.min()).flatten()]
-
+rcolors = ['#'+hex(int(el*15))[2]*6 for el in ((result-result.min())/(result.max()-result.min())).flatten()]
+               
 patch_list = {'offset':[], 'color': []}
 
 plt.close('all')
@@ -120,10 +120,8 @@ def update(ix, ax, msize, fsize, finalsize, distance):
     draw_action_field(ax, pos_filter, pos_patch, 
                       (fsize,fsize), (1,1))
     
-    var = np.sum(matrix[r:r+fsize, c:c+fsize]*filtro)
-    newcolor = '#'+hex(int(var*16/2))[-1]*6
     patch_list['offset'].append(pos_patch)
-    patch_list['color'].append(newcolor)
+    patch_list['color'].append(rcolors[ix])
     
     for i in range(len(patch_list['color'])):
         draw_patch(ax, patch_list['offset'][i], patch_list['color'][i])   
